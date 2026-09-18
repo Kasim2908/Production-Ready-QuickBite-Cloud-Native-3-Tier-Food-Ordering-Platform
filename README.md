@@ -53,6 +53,13 @@ flowchart TB
 
     BE -.->|metrics| PR
 ```
+## Monitoring
+
+<img width="935" height="486" alt="Screenshot 2026-09-18 164657" src="https://github.com/user-attachments/assets/99076ed2-1c9b-44fe-901b-d185ae00db2f" />
+
+## UI of Application
+
+<img width="938" height="491" alt="Screenshot 2026-09-19 020600" src="https://github.com/user-attachments/assets/bfa7050c-935f-4171-985e-7091d3905739" />
 
 ---
 
@@ -135,6 +142,15 @@ flowchart TD
 - **Host access:** `http://localhost`
 - **Docker port mapping:** `80:8080`
 
+### UI
+
+<img width="938" height="491" alt="Screenshot 2026-09-19 020600" src="https://github.com/user-attachments/assets/2e04f8cb-5af2-47f3-a77f-d3a1040d9a4c" />
+
+<img width="950" height="506" alt="Screenshot 2026-09-18 164529" src="https://github.com/user-attachments/assets/ba40b0d4-4d49-47fe-8822-9ae7ee2b62a9" />
+
+<img width="953" height="499" alt="Screenshot 2026-09-18 164542" src="https://github.com/user-attachments/assets/2050342d-6c26-42d0-b36f-d3f2e742cdbd" />
+
+
 ### Backend
 
 The backend uses a multi-stage Docker build.
@@ -147,10 +163,14 @@ flowchart TD
 - **Dockerfile:** `Dockerfile.backend`
 - **Listens on:** `5001`
 
+<img width="425" height="97" alt="Screenshot 2026-09-19 021105" src="https://github.com/user-attachments/assets/4d91336f-ba07-4ba8-8cc2-daeb49045b91" />
+
 ### MongoDB
 
 - Uses a persistent Docker volume: `mongodb_data`
 - Includes a healthcheck to verify that MongoDB is accepting requests
+
+<img width="468" height="338" alt="Screenshot 2026-09-18 164438" src="https://github.com/user-attachments/assets/c88aab67-7bc7-4f68-8fb7-631b98649bf5" />
 
 ---
 
@@ -198,6 +218,13 @@ The Docker healthcheck uses this endpoint to determine whether the backend is re
 ---
 
 ## Observability
+
+### Loki 
+<img width="946" height="491" alt="image" src="https://github.com/user-attachments/assets/afa9f0bd-28e0-4b1b-8c4c-28f202ad4750" />
+
+### Grafana
+<img width="944" height="503" alt="Screenshot 2026-09-18 163243" src="https://github.com/user-attachments/assets/32f711d3-6bc6-4298-bf22-54752095b52d" />
+
 
 The current Compose environment includes:
 
@@ -268,6 +295,11 @@ Stop the stack:
 docker compose down
 ```
 
+### Docker Running containers
+
+<img width="842" height="362" alt="Screenshot 2026-09-10 223931" src="https://github.com/user-attachments/assets/a8d7eb1a-88fe-4bcb-a100-397179d78a7f" />
+
+
 Stop the stack and remove volumes:
 
 ```bash
@@ -282,7 +314,7 @@ docker compose down -v
 
 | Service       | Container                | Port        |
 | ------------- | ------------------------- | ----------- |
-| Frontend      | `quickbite_frontend`      | 80 → 8080   |
+| Frontend      | `quickbite_frontend`      | 80          |
 | Backend       | `quickbite_backend`       | 5001        |
 | MongoDB       | `quickbite_db`            | 27017       |
 | Prometheus    | `quickbite_prometheus`    | 9090        |
@@ -297,6 +329,10 @@ All application and monitoring containers communicate through the `quickbite_net
 ---
 
 ## Persistent Data
+
+### DB
+<img width="468" height="338" alt="Screenshot 2026-09-18 164438" src="https://github.com/user-attachments/assets/847f209f-edd6-4261-8595-6f81dc9092ed" />
+
 
 Docker volumes are used for stateful services:
 
