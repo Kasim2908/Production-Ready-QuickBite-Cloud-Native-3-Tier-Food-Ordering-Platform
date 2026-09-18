@@ -19,15 +19,18 @@ spec:
     spec:
       containers:
         - name: backend
-          image: mohammadkasim/quickbite-backend:latest
-          imagePullPolicy: Always
+          image: production-ready-quickbite-cloud-native-3-tier-food-ordering-platform-backend:latest #mohammadkasim/quickbite-backend:latest
+          imagePullPolicy: IfNotPresent #Always
 
           ports:
             - containerPort: 5001
 
           env:
             - name: MONGO_URI
-              value: mongodb://admin:password123@mongodb:27017
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: MONGO_URI
 
           resources:
             requests:

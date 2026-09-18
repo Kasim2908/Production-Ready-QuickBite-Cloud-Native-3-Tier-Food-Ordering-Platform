@@ -4,3 +4,10 @@ metadata:
   name: food-app
   labels:
     app: quickbite
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argo-cd
+  labels:
+     app: argo-cd

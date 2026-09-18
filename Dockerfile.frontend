@@ -7,6 +7,17 @@ COPY frontend/ /usr/share/nginx/html/
 # Copy the custom Nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Create non-root user
+RUN addgroup -S appgrp && \
+    adduser -S appuser -G appgrp && \
+    chown -R appuser:appgrp /usr/share/nginx/html && \
+    chown -R appuser:appgrp /var/cache/nginx && \
+    chown -R appuser:appgrp /var/log/nginx && \
+    touch /var/run/nginx.pid && \
+    chown appuser:appgrp /var/run/nginx.pid
+
+USER appuser
+
 # Expose port 80
 EXPOSE 80
 

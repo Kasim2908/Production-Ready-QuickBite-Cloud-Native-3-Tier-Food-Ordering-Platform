@@ -1,15 +1,31 @@
 # Use an official Node.js runtime as a parent image
-FROM node:18-alpine
+FROM node:18-alpine as build
 
 # Set the working directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Copy package.json and install dependencies
 COPY backend/package*.json ./
-RUN npm install
 
+# Clean Install
+RUN npm ci --omit=dev
+
+#### 2nd Stage for runtime ####
+
+FROM node:22-alpine 
+WORKDIR /app
+
+COPY --from=build /app/node_modules ./node_modules
 # Copy the rest of the application code
 COPY backend/ .
+
+# Creating non-root user
+RUN addgroup -S appgrp && \
+    adduser -S appuser -G appgrp
+
+RUN chown -R appuser:appgrp /app
+
+USER appuser
 
 # Expose the application port
 EXPOSE 5001
