@@ -23,3 +23,5 @@ yarn-error.log*
 
 # Docker / specific caches
 .docker/
+.kimchi/
+k8s/
