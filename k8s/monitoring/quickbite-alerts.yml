@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: quickbite-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: quickbite.rules
+      rules:
+        - alert: QuickBiteFrontendReplicasUnavailable
+          expr: kube_deployment_status_replicas_available{namespace="food-app", deployment="frontend"} < 5
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "QuickBite frontend replicas unavailable"
+            description: "The QuickBite frontend has fewer than 5 available replicas."
+
+        - alert: QuickBiteBackendReplicasUnavailable
+          expr: kube_deployment_status_replicas_available{namespace="food-app", deployment="backend"} < 2
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "QuickBite backend replicas unavailable"
+            description: "The QuickBite backend has fewer than 2 available replicas."
