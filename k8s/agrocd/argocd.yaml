@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: quickbite
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/altamashGit/Production-Ready-QuickBite-Cloud-Native-3-Tier-Food-Ordering-Platform.git
+    targetRevision: main
+    path: k8s
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: food-app
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+    syncOptions:
+      - CreateNamespace=true
