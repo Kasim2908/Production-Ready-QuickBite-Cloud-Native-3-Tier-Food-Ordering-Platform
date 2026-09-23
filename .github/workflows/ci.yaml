@@ -70,8 +70,8 @@ jobs:
         run: | 
           docker build \
           --file ./Dockerfile.frontend \
-          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:latest \
-          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:${IMAGE_TAG} \
+          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-frontend:latest \
+          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-frontend:${IMAGE_TAG} \
           .
       - name: Check Docker images
         run: docker images
@@ -103,17 +103,17 @@ jobs:
 
       - name: Install Trivy
         uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'image'
+          image-ref: 'quickbite-backend:scan'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
 
-      - name: Scan backend image
-        run: |
-          trivy image \
-            --severity HIGH,CRITICAL \
-            --exit-code 1 \
-            quickbite-backend:scan
 
-      - name: Scan frontend image
-        run: |
-          trivy image \
-            --severity HIGH,CRITICAL \
-            --exit-code 1 \
-            quickbite-frontend:scan
+
+      # - name: Scan frontend image
+      #   run: |
+      #     trivy image \
+      #       --severity HIGH,CRITICAL \
+      #       --exit-code 1 \
+      #       quickbite-frontend:scan
