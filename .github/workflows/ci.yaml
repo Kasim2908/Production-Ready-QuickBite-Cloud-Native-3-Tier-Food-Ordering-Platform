@@ -1,7 +1,7 @@
 name: CI Pipeline
 on:
   push:
-    branches: ci-cd
+    branches: feature/ci-cd
 
 concurrency:
   group: quickbite-ci-${{ github.workflow }}-${{ github.ref }}
