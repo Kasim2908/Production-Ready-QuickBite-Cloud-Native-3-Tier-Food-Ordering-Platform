@@ -75,3 +75,45 @@ jobs:
           .
       - name: Check Docker images
         run: docker images
+        
+## ***** Security Scan ***** ##
+  security:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+
+    needs:
+      - docker
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: |
+          docker build \
+            -f Dockerfile.backend \
+            -t quickbite-backend:scan .
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            -f Dockerfile.frontend \
+            -t quickbite-frontend:scan .
+
+      - name: Install Trivy
+        uses: aquasecurity/setup-trivy@v0.2.3
+
+      - name: Scan backend image
+        run: |
+          trivy image \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            quickbite-backend:scan
+
+      - name: Scan frontend image
+        run: |
+          trivy image \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            quickbite-frontend:scan
