@@ -21,7 +21,10 @@ RUN jq '. + {"overrides": { \
   }}' package.json > temp.json && mv temp.json package.json
 
 # Clean Install
-RUN npm ci --omit=dev
+# RUN npm ci --omit=dev
+
+# npm install 'npm ci' to 'npm install' to process the overrides cleanly
+RUN npm install --omit=dev
 
 #### 2nd Stage for runtime ####
 
