@@ -61,7 +61,7 @@ jobs:
       - name: Build backend image
         run: | 
           docker build \ 
-          --file Dockerfile.backend \ 
+          --file ./Dockerfile.backend \ 
           --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:latest \ 
           --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:${IMAGE_TAG} \ 
           .
@@ -69,7 +69,7 @@ jobs:
       - name: Build frontend image
         run: | 
           docker build \ 
-          --file Dockerfile.backend \ 
+          --file ./Dockerfile.backend \ 
           --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:latest \ 
           --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:${IMAGE_TAG} \ 
           .
