@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy package.json and install dependencies
 COPY backend/package*.json ./
 
+# Run audit fix to patch vulnerabilities in the lockfile
+RUN npm audit fix --audit-level=high
+
 # Clean Install
 RUN npm ci --omit=dev
 
