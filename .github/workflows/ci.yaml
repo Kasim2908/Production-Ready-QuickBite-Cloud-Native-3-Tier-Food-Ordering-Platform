@@ -60,18 +60,18 @@ jobs:
 
       - name: Build backend image
         run: | 
-          docker build \ 
-          --file ./Dockerfile.backend \ 
-          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:latest \ 
-          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:${IMAGE_TAG} \ 
+          docker build \
+          --file ./Dockerfile.backend \
+          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:latest \
+          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:${IMAGE_TAG} \
           .
 
       - name: Build frontend image
         run: | 
-          docker build \ 
-          --file ./Dockerfile.backend \ 
-          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:latest \ 
-          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:${IMAGE_TAG} \ 
+          docker build \
+          --file ./Dockerfile.frontend \
+          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:latest \
+          --tag ${{ secrets.DOCKERHUB_USERNAME }}/quickbite-backend:${IMAGE_TAG} \
           .
       - name: Check Docker images
         run: docker images
