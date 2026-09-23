@@ -11,20 +11,20 @@ RUN apk add --no-cache jq
 COPY backend/package*.json ./
 
 #  Force override the specific nested vulnerabilities Trivy caught
-RUN jq '. + {"overrides": { \
-    "tar": "^7.5.21", \
-    "ip-address": "^10.3.1", \
-    "sigstore": "^4.1.1", \
-    "brace-expansion": "^5.0.9", \
-    "picomatch": "^4.0.4", \
-    "pacote": "^21.5.1" \
-  }}' package.json > temp.json && mv temp.json package.json
+# RUN jq '. + {"overrides": { \
+#     "tar": "^7.5.21", \
+#     "ip-address": "^10.3.1", \
+#     "sigstore": "^4.1.1", \
+#     "brace-expansion": "^5.0.9", \
+#     "picomatch": "^4.0.4", \
+#     "pacote": "^21.5.1" \
+#   }}' package.json > temp.json && mv temp.json package.json
 
-# Clean Install
-# RUN npm ci --omit=dev
+#Clean Install
+RUN npm ci --omit=dev
 
 # npm install 'npm ci' to 'npm install' to process the overrides cleanly
-RUN npm install --omit=dev
+# RUN npm install --omit=dev
 
 #### 2nd Stage for runtime ####
 
@@ -32,7 +32,13 @@ FROM node:22-alpine
 WORKDIR /app
 
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/package.json ./package.json
+# COPY --from=build /app/package.json ./package.json
+
+# Copy application 
+COPY backend/package.json ./package.json 
+COPY backend/server.js ./server.js 
+COPY backend/models ./models 
+COPY backend/routes ./routes
 
 COPY backend/ .
 
