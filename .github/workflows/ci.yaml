@@ -75,7 +75,7 @@ jobs:
           .
       - name: Check Docker images
         run: docker images
-        
+
 ## ***** Security Scan ***** ##
   security:
     name: Container Security Scan
@@ -102,7 +102,7 @@ jobs:
             -t quickbite-frontend:scan .
 
       - name: Install Trivy
-        uses: aquasecurity/setup-trivy@v0.2.3
+        uses: aquasecurity/trivy-action@v0.36.0
 
       - name: Scan backend image
         run: |
