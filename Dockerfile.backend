@@ -1,57 +1,97 @@
-# Use an official Node.js runtime as a parent image
-FROM node:22-alpine as build
+# # Use an official Node.js runtime as a parent image
+# FROM node:22-alpine as build
 
-# Set the working directory
+# # Set the working directory
+# WORKDIR /app
+
+# # Install jq so we can modify the JSON configuration dynamically
+# RUN apk add --no-cache jq
+
+# # Copy package.json and install dependencies
+# COPY backend/package*.json ./
+
+# #  Force override the specific nested vulnerabilities Trivy caught
+# # RUN jq '. + {"overrides": { \
+# #     "tar": "^7.5.21", \
+# #     "ip-address": "^10.3.1", \
+# #     "sigstore": "^4.1.1", \
+# #     "brace-expansion": "^5.0.9", \
+# #     "picomatch": "^4.0.4", \
+# #     "pacote": "^21.5.1" \
+# #   }}' package.json > temp.json && mv temp.json package.json
+
+# #Clean Install
+# RUN npm ci --omit=dev
+
+# # npm install 'npm ci' to 'npm install' to process the overrides cleanly
+# # RUN npm install --omit=dev
+
+# #### 2nd Stage for runtime ####
+
+# FROM node:22-alpine 
+# WORKDIR /app
+
+# COPY --from=build /app/node_modules ./node_modules
+# # COPY --from=build /app/package.json ./package.json
+
+# # Copy application 
+# COPY backend/package.json ./package.json 
+# COPY backend/server.js ./server.js 
+# COPY backend/models ./models 
+# COPY backend/routes ./routes
+
+# COPY backend/ .
+
+# # Creating non-root user
+# RUN addgroup -S appgrp && \
+#     adduser -S appuser -G appgrp
+
+# RUN chown -R appuser:appgrp /app
+
+# USER appuser
+
+# # Expose the application port
+# EXPOSE 5001
+
+# # Start the Node.js application
+# CMD ["npm", "start"]
+
+
+# =========================
+# Build / Dependencies
+# =========================
+
+FROM node:22-alpine AS build
+
 WORKDIR /app
 
-# Install jq so we can modify the JSON configuration dynamically
-RUN apk add --no-cache jq
+# Copy dependency manifests
+COPY backend/package.json backend/package-lock.json ./
 
-# Copy package.json and install dependencies
-COPY backend/package*.json ./
-
-#  Force override the specific nested vulnerabilities Trivy caught
-# RUN jq '. + {"overrides": { \
-#     "tar": "^7.5.21", \
-#     "ip-address": "^10.3.1", \
-#     "sigstore": "^4.1.1", \
-#     "brace-expansion": "^5.0.9", \
-#     "picomatch": "^4.0.4", \
-#     "pacote": "^21.5.1" \
-#   }}' package.json > temp.json && mv temp.json package.json
-
-#Clean Install
+# Install production dependencies exactly from lockfile
 RUN npm ci --omit=dev
 
-# npm install 'npm ci' to 'npm install' to process the overrides cleanly
-# RUN npm install --omit=dev
 
-#### 2nd Stage for runtime ####
+# =========================
+# Runtime
+# =========================
+FROM node:22-alpine
 
-FROM node:22-alpine 
 WORKDIR /app
 
+# Copy production dependencies
 COPY --from=build /app/node_modules ./node_modules
-# COPY --from=build /app/package.json ./package.json
 
-# Copy application 
-COPY backend/package.json ./package.json 
-COPY backend/server.js ./server.js 
-COPY backend/models ./models 
-COPY backend/routes ./routes
-
+# Copy backend application
 COPY backend/ .
 
-# Creating non-root user
+# Create non-root user
 RUN addgroup -S appgrp && \
-    adduser -S appuser -G appgrp
-
-RUN chown -R appuser:appgrp /app
+    adduser -S appuser -G appgrp && \
+    chown -R appuser:appgrp /app
 
 USER appuser
 
-# Expose the application port
 EXPOSE 5001
 
-# Start the Node.js application
 CMD ["npm", "start"]
