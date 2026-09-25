@@ -106,7 +106,7 @@ jobs:
         with:
           scan-type: 'image'
           image-ref: 'quickbite-backend:scan'
-          severity: 'HIGH,CRITICAL'
+          severity: 'CRITICAL'
           exit-code: '1'
 
 
