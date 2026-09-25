@@ -101,7 +101,7 @@ jobs:
             -f Dockerfile.frontend \
             -t quickbite-frontend:scan .
 
-      - name: Install Trivy
+      - name: Scan backend image
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'image'
@@ -109,11 +109,10 @@ jobs:
           severity: 'CRITICAL'
           exit-code: '1'
 
-
-
-      # - name: Scan frontend image
-      #   run: |
-      #     trivy image \
-      #       --severity HIGH,CRITICAL \
-      #       --exit-code 1 \
-      #       quickbite-frontend:scan
+      - name: Scan frontend image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'image'
+          image-ref: 'quickbite-frontend:scan'
+          severity: 'CRITICAL'
+          exit-code: '1'
