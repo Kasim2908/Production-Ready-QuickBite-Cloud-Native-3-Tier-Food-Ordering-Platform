@@ -42,6 +42,11 @@ function checkAuth() {
           <a class="nav-link" href="orders.html">My Orders</a>
         </li>
         <li class="nav-item">
+          <button class="nav-link btn btn-link p-0 position-relative me-3" data-bs-toggle="modal" data-bs-target="#aiAssistantModal">
+            🤖 AI Assistant
+          </button>
+        </li>
+        <li class="nav-item">
           <button class="nav-link btn btn-link p-0 position-relative me-3" data-bs-toggle="modal" data-bs-target="#cartModal">
             🛒 Cart 
             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCountBadge" style="display: none;">
@@ -85,10 +90,142 @@ function logout() {
   window.location.href = 'index.html';
 }
 
+const assistantMenu = [
+  { name: 'Classic Cheese Pizza', price: 350, type: 'veg', tags: ['pizza', 'cheese', 'fast food', 'family'] },
+  { name: 'Spicy Zinger Burger', price: 150, type: 'non-veg', tags: ['burger', 'fast food', 'spicy'] },
+  { name: 'Hyderabadi Chicken Biryani', price: 250, type: 'non-veg', tags: ['biryani', 'rice', 'spicy', 'family'] },
+  { name: 'Butter Chicken', price: 300, type: 'non-veg', tags: ['curry', 'north indian', 'rich'] },
+  { name: 'Tandoori Roti & Paneer', price: 200, type: 'veg', tags: ['paneer', 'roti', 'north indian', 'healthy'] },
+  { name: 'Dal Makhani', price: 180, type: 'veg', tags: ['dal', 'north indian', 'comfort'] },
+  { name: 'Chole Bhature', price: 120, type: 'veg', tags: ['north indian', 'street food', 'snack'] },
+  { name: 'Paneer Tikka', price: 220, type: 'veg', tags: ['paneer', 'starter', 'grilled'] },
+  { name: 'Masala Dosa', price: 100, type: 'veg', tags: ['south indian', 'light', 'breakfast'] },
+  { name: 'Veg Hakka Noodles', price: 140, type: 'veg', tags: ['chinese', 'noodles', 'quick'] },
+  { name: 'Gobi Manchurian', price: 160, type: 'veg', tags: ['chinese', 'starter', 'spicy'] },
+  { name: 'Spring Rolls', price: 110, type: 'veg', tags: ['chinese', 'starter', 'snack'] },
+  { name: 'Chocolate Lava Cake', price: 120, type: 'veg', tags: ['dessert', 'sweet', 'cake'] },
+  { name: 'Gulab Jamun', price: 60, type: 'veg', tags: ['sweet', 'dessert', 'snack'] },
+  { name: 'Rasmalai', price: 80, type: 'veg', tags: ['sweet', 'dessert', 'milk'] }
+];
+
+function buildAiRecommendations(input) {
+  const text = input.toLowerCase();
+  const budgetMatch = text.match(/under\s*₹?\s*(\d+)/) || text.match(/budget\s*₹?\s*(\d+)/) || text.match(/\b(\d+)\s*(?:rs|rupees|₹)\b/);
+  const peopleMatch = text.match(/(\d+)\s*(?:people|person|persons|guests|friends)/);
+  const isVeg = /vegetarian|veg|veggie/i.test(text);
+  const isNonVeg = /non-veg|nonveg|chicken|mutton|fish|egg|meat/i.test(text);
+  const isSpicy = /spicy|hot|masala/i.test(text);
+  const isSnack = /snack|starter|light|quick|tiffin/i.test(text);
+  const isDessert = /sweet|dessert|cake|gulab|rasmalai/i.test(text);
+  const budget = budgetMatch ? Number(budgetMatch[1]) : null;
+  const people = peopleMatch ? Number(peopleMatch[1]) : 1;
+
+  let filtered = assistantMenu.filter(item => {
+    if (budget) {
+      const perPersonBudget = Math.max(50, Math.floor(budget / Math.max(people, 1)));
+      if (item.price > perPersonBudget * 1.5) return false;
+    }
+
+    if (isVeg && item.type !== 'veg') return false;
+    if (isNonVeg && item.type !== 'non-veg') return false;
+    if (isSpicy && !item.tags.some(tag => ['spicy', 'masala', 'hot'].includes(tag))) return false;
+    if (isSnack && !item.tags.some(tag => ['snack', 'starter', 'light', 'quick', 'breakfast'].includes(tag))) return false;
+    if (isDessert && !item.tags.some(tag => ['sweet', 'dessert', 'cake'].includes(tag))) return false;
+
+    if (text.includes('pizza') && !item.tags.includes('pizza')) return false;
+    if (text.includes('burger') && !item.tags.includes('burger')) return false;
+    if (text.includes('biryani') && !item.tags.includes('biryani')) return false;
+    if (text.includes('noodles') && !item.tags.includes('noodles')) return false;
+    if (text.includes('paneer') && !item.tags.includes('paneer')) return false;
+
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    filtered = assistantMenu.slice().sort((a, b) => a.price - b.price).slice(0, 4);
+  }
+
+  filtered = filtered.slice().sort((a, b) => Math.abs(a.price - (budget || a.price)) - Math.abs(b.price - (budget || b.price))).slice(0, 4);
+
+  const estimatedTotal = filtered.reduce((sum, item) => sum + item.price, 0);
+
+  return `
+    <div>
+      <strong>Recommended picks:</strong>
+      <ul class="ai-reco-list">
+        ${filtered.map(item => `
+          <li>
+            <span class="ai-reco-name">${item.name}</span>
+            <span class="ai-reco-price">₹${item.price}</span>
+          </li>
+        `).join('')}
+      </ul>
+      <div class="ai-reco-summary">
+        <strong>Estimated total:</strong> ₹${estimatedTotal} for ${people} ${people > 1 ? 'people' : 'person'}
+        ${budget ? `<br><strong>Budget check:</strong> ${estimatedTotal <= budget ? 'within your budget.' : 'slightly above your budget.'}` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function addAssistantMessage(message, sender = 'bot') {
+  const chatWindow = document.getElementById('aiAssistantChatWindow');
+  if (!chatWindow) return;
+
+  const messageEl = document.createElement('div');
+  messageEl.className = `ai-message ${sender === 'user' ? 'ai-message-user' : 'ai-message-bot'}`;
+
+  if (sender === 'bot') {
+    messageEl.innerHTML = `
+      <div class="ai-avatar">🤖</div>
+      <div class="ai-bubble">${message}</div>
+    `;
+  } else {
+    messageEl.innerHTML = `
+      <div class="ai-bubble ai-bubble-user">${message}</div>
+    `;
+  }
+
+  chatWindow.appendChild(messageEl);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function handleAssistantSubmit(event) {
+  event.preventDefault();
+
+  const input = document.getElementById('aiAssistantInput');
+  if (!input) return;
+
+  const value = input.value.trim();
+  if (!value) return;
+
+  addAssistantMessage(value, 'user');
+  input.value = '';
+
+  setTimeout(() => {
+    addAssistantMessage(buildAiRecommendations(value), 'bot');
+  }, 400);
+}
+
 // ------------------------------------------------------------------
 // AUTHENTICATION (login.html)
 // ------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
+  const aiForm = document.getElementById('aiAssistantForm');
+  if (aiForm) {
+    aiForm.addEventListener('submit', handleAssistantSubmit);
+  }
+
+  document.querySelectorAll('[data-ai-prompt]').forEach(button => {
+    button.addEventListener('click', () => {
+      const input = document.getElementById('aiAssistantInput');
+      if (!input) return;
+      input.value = button.dataset.aiPrompt;
+      const form = document.getElementById('aiAssistantForm');
+      if (form) form.dispatchEvent(new Event('submit', { cancelable: true }));
+    });
+  });
+
   // Login Submision
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {

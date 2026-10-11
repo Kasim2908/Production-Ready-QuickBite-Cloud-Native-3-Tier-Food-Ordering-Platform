@@ -172,6 +172,18 @@
       </div>
     </section>
 
+    <div class="container mb-4">
+      <div class="ai-assistant-banner">
+        <div>
+          <div class="ai-badge">🤖</div>
+          <strong>QuickBite AI Assistant</strong>
+        </div>
+        <button class="btn btn-primary-custom" type="button" data-bs-toggle="modal" data-bs-target="#aiAssistantModal">
+          Ask for food suggestions
+        </button>
+      </div>
+    </div>
+
     <!-- Cuisine Tabs -->
     <div class="container mb-4">
       <ul class="nav nav-pills justify-content-center cuisine-tabs" id="cuisineTabs">
@@ -225,6 +237,42 @@
           <button type="button" class="btn btn-primary-custom w-100 fs-5 pb-2 pt-2" id="cartCheckoutBtn" onclick="placeOrder()">
             Checkout
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="aiAssistantModal" tabindex="-1" aria-labelledby="aiAssistantModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content ai-assistant-modal-content">
+        <div class="modal-header ai-assistant-header">
+          <div class="d-flex align-items-center gap-2">
+            <div class="assistant-badge-small">🤖</div>
+            <h5 class="modal-title fw-bold fs-4 mb-0" id="aiAssistantModalLabel">QuickBite AI Assistant</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body ai-assistant-body">
+          <div class="ai-sample-pills mb-3">
+            <button class="ai-sample-btn" type="button" data-ai-prompt="Suggest a vegetarian meal under ₹250 for two people">Vegetarian under ₹250</button>
+            <button class="ai-sample-btn" type="button" data-ai-prompt="Recommend a spicy dinner for two under ₹400">Spicy dinner for 2</button>
+            <button class="ai-sample-btn" type="button" data-ai-prompt="I want a light snack under ₹150 for one person">Light snack</button>
+          </div>
+
+          <div id="aiAssistantChatWindow" class="ai-assistant-chat-window">
+            <div class="ai-message ai-message-bot">
+              <div class="ai-avatar">🤖</div>
+              <div class="ai-bubble">Hi! Tell me your budget, food preferences, and how many people you're ordering for. Example: Suggest a vegetarian meal under ₹250 for two people.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer ai-assistant-footer">
+          <form id="aiAssistantForm" class="ai-assistant-form">
+            <input id="aiAssistantInput" type="text" placeholder="Type your food request here..." autocomplete="off" />
+            <button type="submit" class="btn btn-primary-custom">Send</button>
+          </form>
         </div>
       </div>
     </div>

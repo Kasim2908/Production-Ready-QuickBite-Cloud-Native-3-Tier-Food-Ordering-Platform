@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuickBite AI Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-box">
+          <div class="brand-icon">🍔</div>
+          <div>
+            <div class="brand-name">QuickBite</div>
+            <div class="brand-tag">AI Food Assistant</div>
+          </div>
+        </div>
+
+        <div class="sample-prompts">
+          <h3>Try examples</h3>
+          <button class="prompt-chip" data-prompt="Suggest a vegetarian meal under ₹250 for two people">Vegetarian under ₹250 for 2</button>
+          <button class="prompt-chip" data-prompt="Suggest a family dinner for four with budget ₹800 and non-veg options">Family dinner for 4</button>
+          <button class="prompt-chip" data-prompt="I want a light snack under ₹150 for one person">Light snack under ₹150</button>
+          <button class="prompt-chip" data-prompt="Recommend something spicy and filling for two people under ₹400">Spicy dinner for 2</button>
+        </div>
+      </aside>
+
+      <main class="chat-panel">
+        <header class="chat-header">
+          <div class="title-wrap">
+            <div class="assistant-badge">🤖</div>
+            <div>
+              <h1>QuickBite AI Assistant</h1>
+            </div>
+          </div>
+        </header>
+
+        <div class="chat-window" id="chatWindow">
+          <div class="message bot">
+            <div class="avatar">🤖</div>
+            <div class="bubble">
+              Hi! Tell me your budget, food preferences, and how many people you're ordering for. Example: Suggest a vegetarian meal under ₹250 for two people.
+            </div>
+          </div>
+        </div>
+
+        <form class="composer" id="promptForm">
+          <input id="userInput" type="text" placeholder="Type your food request here..." autocomplete="off" />
+          <button type="submit">Send</button>
+        </form>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
