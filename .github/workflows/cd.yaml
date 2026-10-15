@@ -1,0 +1,89 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]     # must match the `name:` of your CI file exactly
+    types: [completed]
+    branches: [feature/ci-cd]      # same branch CI runs on
+
+  # Manual run (also useful for rollback: give an old tag like sha-abc1234)
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy (e.g. sha-abc1234). Empty = current commit"
+        required: false
+        type: string
+
+concurrency:
+  group: quickbite-cd
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  update-manifests:
+    name: "Update K8s image tag"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Auto-run only if CI succeeded AND was a normal push. Manual runs always allowed.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
+    permissions:
+      contents: write              # to commit the new tag
+    env:
+      BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
+      DH_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+    steps:
+      - name: Checkout the branch that CI built
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch || github.ref_name }}
+
+      - name: Decide image tag
+        id: vars
+        run: |
+          if [ -n "${{ inputs.image_tag }}" ]; then
+            TAG="${{ inputs.image_tag }}"
+          else
+            SHA="${{ github.event.workflow_run.head_sha || github.sha }}"
+            TAG="sha-${SHA::7}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Deploying tag: ${TAG} on branch: ${BRANCH}"
+
+      - name: Set new image tags (kustomize)
+        working-directory: k8s
+        run: |
+          kustomize edit set image \
+            "${DH_USER}/quickbite-backend=${DH_USER}/quickbite-backend:${{ steps.vars.outputs.tag }}" \
+            "${DH_USER}/quickbite-frontend=${DH_USER}/quickbite-frontend:${{ steps.vars.outputs.tag }}"
+          echo "---- kustomization.yaml ----"
+          cat kustomization.yaml
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add k8s/kustomization.yaml
+          if git diff --cached --quiet; then
+            echo "No change to commit (tag already deployed)"
+            exit 0
+          fi
+          git commit -m "cd: deploy ${{ steps.vars.outputs.tag }} [skip ci]"
+          git push origin HEAD:${BRANCH} || { git pull --rebase origin ${BRANCH} && git push origin HEAD:${BRANCH}; }
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### 🚢 CD · deploy requested"
+            echo ""
+            echo "| Item | Value |"
+            echo "|---|---|"
+            echo "| Tag | \`${{ steps.vars.outputs.tag }}\` |"
+            echo "| Branch | \`${BRANCH}\` |"
+            echo "| Next | ArgoCD sees the new commit and syncs to EKS |"
+          } >> "$GITHUB_STEP_SUMMARY"
