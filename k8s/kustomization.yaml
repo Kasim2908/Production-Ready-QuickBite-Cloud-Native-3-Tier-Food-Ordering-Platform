@@ -3,19 +3,21 @@ kind: Kustomization
 #namespace: food-app
 
 resources:
-  - namespace.yml
-  - mongodb/secrets.yaml
-  - mongodb/pvc.yml
-  - mongodb/deployment.yml
-  - mongodb/service.yml
-  - backend/secret.yaml
-  - backend/deployment.yml
-  - backend/service.yml
-  - frontend/deployment.yml
-  - frontend/service.yml
+- namespace.yml
+- mongodb/secrets.yaml
+- mongodb/pvc.yml
+- mongodb/deployment.yml
+- mongodb/service.yml
+- backend/secret.yaml
+- backend/deployment.yml
+- backend/service.yml
+- frontend/deployment.yml
+- frontend/service.yml
 
 images:
-  - name: altamsh/quickbite-backend
-    newTag: latest
-  - name: altamsh/quickbite-frontend
-    newTag: latest
+- name: altamsh/quickbite-backend
+  newName: altamsh/quickbite-backend
+  newTag: sha-5a277e7
+- name: altamsh/quickbite-frontend
+  newName: altamsh/quickbite-frontend
+  newTag: sha-5a277e7
