@@ -62,7 +62,7 @@ jobs:
             "${DH_USER}/quickbite-frontend=${DH_USER}/quickbite-frontend:${{ steps.vars.outputs.tag }}"
           echo "---- kustomization.yaml ----"
           cat kustomization.yaml
-
+## Test
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
