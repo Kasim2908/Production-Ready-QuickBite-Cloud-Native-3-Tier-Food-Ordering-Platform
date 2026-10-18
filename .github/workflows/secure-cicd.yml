@@ -145,13 +145,23 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
+          
+  deploy:
+    name: 🚀 Deploy to AWS EC2
+    runs-on: ubuntu-latest
+    needs: push
+
+    steps:
+      - name: Deploy application to EC2
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
 
             cd ~/quickbite
-
-            echo "Pulling latest deployment configuration..."
-            git pull origin main
 
             echo "Setting image tag..."
             export IMAGE_TAG=${{ github.sha }}
@@ -169,3 +179,4 @@ jobs:
 
             echo "Running containers:"
             docker compose ps
+
