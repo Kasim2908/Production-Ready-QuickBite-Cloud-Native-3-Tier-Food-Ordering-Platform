@@ -211,21 +211,6 @@ function handleAssistantSubmit(event) {
 // AUTHENTICATION (login.html)
 // ------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
-  const aiForm = document.getElementById('aiAssistantForm');
-  if (aiForm) {
-    aiForm.addEventListener('submit', handleAssistantSubmit);
-  }
-
-  document.querySelectorAll('[data-ai-prompt]').forEach(button => {
-    button.addEventListener('click', () => {
-      const input = document.getElementById('aiAssistantInput');
-      if (!input) return;
-      input.value = button.dataset.aiPrompt;
-      const form = document.getElementById('aiAssistantForm');
-      if (form) form.dispatchEvent(new Event('submit', { cancelable: true }));
-    });
-  });
-
   // Login Submision
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
@@ -586,4 +571,19 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCartUI(); // initial cart state refresh
   if (document.getElementById('foodContainer')) loadFoods();
   if (document.getElementById('ordersContainer')) loadOrders();
+
+  const aiForm = document.getElementById('aiAssistantForm');
+  if (aiForm) {
+    aiForm.addEventListener('submit', handleAssistantSubmit);
+  }
+
+  document.querySelectorAll('[data-ai-prompt]').forEach(button => {
+    button.addEventListener('click', () => {
+      const input = document.getElementById('aiAssistantInput');
+      if (!input) return;
+      input.value = button.dataset.aiPrompt;
+      const form = document.getElementById('aiAssistantForm');
+      if (form) form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+  });
 });
