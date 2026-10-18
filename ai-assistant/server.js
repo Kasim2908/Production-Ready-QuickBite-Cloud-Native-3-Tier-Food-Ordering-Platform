@@ -1,7 +1,9 @@
+
 const http = require("http");
 
-const PORT = 8001;
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "http://35.154.50.216:8000";
+const PORT = Number(process.env.PORT) || 8001;
+const ALLOWED_ORIGIN =
+  process.env.ALLOWED_ORIGIN || "http://13.233.255.13:8000";
 
 const menu = [
   { name: "Classic Cheese Pizza", price: 350, type: "veg", tags: ["pizza", "cheese", "family"] },
@@ -23,6 +25,7 @@ const menu = [
 
 function recommend(message) {
   const text = message.toLowerCase();
+
   const budgetMatch =
     text.match(/under\s*₹?\s*(\d+)/) ||
     text.match(/budget\s*₹?\s*(\d+)/) ||
@@ -34,41 +37,63 @@ function recommend(message) {
   );
 
   const budget = budgetMatch ? Number(budgetMatch[1]) : null;
-  const people = peopleMatch ? Math.min(peopleMatch[1] * 1, 20) : 1;
-  const wantsNonVeg = /\bnon[- ]?veg\b|chicken|mutton|fish|meat|\begg\b/.test(text);
-  const wantsVeg = /\bveg(?:etarian)?\b|veggie/.test(text) && !wantsNonVeg;
+  const people = peopleMatch
+    ? Math.min(Number(peopleMatch[1]), 20)
+    : 1;
+
   const wantsVegan = /\bvegan\b/.test(text);
+  const wantsNonVeg =
+    /\bnon[- ]?veg\b|chicken|mutton|fish|meat|\begg\b/.test(text);
+  const wantsVeg =
+    !wantsNonVeg && /\bveg(?:etarian)?\b|veggie/.test(text);
+
   const wantsSpicy = /spicy|hot|masala/.test(text);
   const wantsSnack = /snack|starter|light|quick|tiffin|breakfast/.test(text);
   const wantsDessert = /sweet|dessert|cake|gulab|rasmalai/.test(text);
 
   const keywords = ["pizza", "burger", "biryani", "noodles", "paneer"];
-  const keyword = keywords.find(k => text.includes(k));
+  const keyword = keywords.find(item => text.includes(item));
 
   let matches = menu.filter(item => {
     if (wantsVeg && item.type !== "veg") return false;
     if (wantsNonVeg && item.type !== "non-veg") return false;
-    if (wantsVegan && ["Tandoori Roti & Paneer", "Dal Makhani"].includes(item.name)) return false;
+
+    if (
+      wantsVegan &&
+      ["Tandoori Roti & Paneer", "Dal Makhani"].includes(item.name)
+    ) return false;
+
     if (wantsSpicy && !item.tags.includes("spicy")) return false;
-    if (wantsSnack && !item.tags.some(t =>
-      ["snack", "starter", "light", "quick", "breakfast"].includes(t)
-    )) return false;
-    if (wantsDessert && !item.tags.some(t =>
-      ["sweet", "dessert", "cake"].includes(t)
-    )) return false;
+
+    if (
+      wantsSnack &&
+      !item.tags.some(tag =>
+        ["snack", "starter", "light", "quick", "breakfast"].includes(tag)
+      )
+    ) return false;
+
+    if (
+      wantsDessert &&
+      !item.tags.some(tag =>
+        ["sweet", "dessert", "cake"].includes(tag)
+      )
+    ) return false;
+
     if (keyword && !item.tags.includes(keyword)) return false;
+
     return true;
   });
 
-  if (!matches.length) {
+  if (matches.length === 0) {
     return {
-      reply: "I couldn't find a menu match for all those preferences. Try a different food type or ask for a snack, dessert, vegetarian meal, or spicy dish.",
+      reply:
+        "I couldn't find a menu match for all those preferences. Try a different food type or ask for a snack, dessert, vegetarian meal, or spicy dish.",
       recommendations: []
     };
   }
 
-  // Keep the total within the requested budget when possible.
-  const limit = budget || Infinity;
+  // The requested budget is the total budget for the whole order.
+  const limit = budget === null ? Infinity : budget;
   const selected = [];
   let total = 0;
 
@@ -76,31 +101,39 @@ function recommend(message) {
 
   for (const item of matches) {
     if (selected.length >= 4) break;
+
     if (total + item.price <= limit) {
-      selected.push({ quantity: 1, name: item.name });
+      selected.push({
+        quantity: 1,
+        name: item.name
+      });
+
       total += item.price;
     }
   }
 
-  if (!selected.length) {
-    const affordable = matches.find(item => item.price <= limit);
-    if (!affordable) {
-      return {
-        reply: `I couldn't find a matching item within ₹${budget}. Try increasing your budget.`,
-        recommendations: []
-      };
-    }
-    selected.push({ quantity: 1, name: affordable.name });
-    total = affordable.price;
+  if (selected.length === 0) {
+    return {
+      reply: budget === null
+        ? "I couldn't find a suitable recommendation. Try another preference."
+        : `The cheapest matching item costs ₹${matches[0].price}, which exceeds your ₹${budget} total budget. Try increasing your budget.`,
+      recommendations: []
+    };
   }
 
   return {
-    reply: `Here are ${selected.length} menu picks based on your preferences. These are sample menu prices; availability may vary.`,
-    recommendations: [{
-      items: selected,
-      total_price: total,
-      ...(budget !== null ? { remaining_budget: budget - total } : {})
-    }]
+    reply: `Here are ${selected.length} menu picks for ${people} ${
+      people === 1 ? "person" : "people"
+    }. The total is ₹${total}. These are sample menu prices; availability may vary.`,
+    recommendations: [
+      {
+        items: selected,
+        total_price: total,
+        ...(budget !== null
+          ? { remaining_budget: budget - total }
+          : {})
+      }
+    ]
   };
 }
 
@@ -109,6 +142,7 @@ const server = http.createServer((req, res) => {
   res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS, GET");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
 
   if (req.method === "OPTIONS") {
     res.writeHead(204);
@@ -116,7 +150,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.method === "GET" && req.url === "/") {
-    res.writeHead(200, { "Content-Type": "application/json" });
+    res.writeHead(200);
     return res.end(JSON.stringify({
       message: "QuickBite recommendation API is running",
       endpoint: "POST /chat"
@@ -124,29 +158,44 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.method !== "POST" || req.url !== "/chat") {
-    res.writeHead(404, { "Content-Type": "application/json" });
+    res.writeHead(404);
     return res.end(JSON.stringify({ error: "Not found" }));
   }
 
   let body = "";
+
   req.on("data", chunk => {
     body += chunk;
-    if (body.length > 10000) req.destroy();
+
+    if (body.length > 10000) {
+      res.writeHead(413);
+      res.end(JSON.stringify({ error: "Request body too large" }));
+      req.destroy();
+    }
   });
 
   req.on("end", () => {
+    if (res.writableEnded) return;
+
     try {
       const data = JSON.parse(body || "{}");
-      if (typeof data.message !== "string" || !data.message.trim()) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ error: "A message is required" }));
+
+      if (
+        typeof data.message !== "string" ||
+        !data.message.trim()
+      ) {
+        res.writeHead(400);
+        return res.end(JSON.stringify({
+          error: "A message is required"
+        }));
       }
 
       const result = recommend(data.message.trim().slice(0, 500));
-      res.writeHead(200, { "Content-Type": "application/json" });
+
+      res.writeHead(200);
       res.end(JSON.stringify(result));
     } catch {
-      res.writeHead(400, { "Content-Type": "application/json" });
+      res.writeHead(400);
       res.end(JSON.stringify({ error: "Invalid JSON request" }));
     }
   });
